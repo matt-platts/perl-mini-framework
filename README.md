@@ -24,8 +24,11 @@ The default entry point is api.cgi and is found in the root directory. An .htacc
 Adding a new feature requires a new subroutine to be written to deal with it - either in a new controller, or added to an existing controller. Controllers should be placed in the /controllers folder as perl modules with their own package namespace (named after the filename), and ideally should be named after the section of the app that they deal with, with get/add/update/search etc functions written into the controller as required. Example URLS might be:
 
 /user/get/userid/12345 - to get data for a user with id 12345 from a function called 'get' in /controllers/userController.pm
+
 /user/update/userid/12345 - to update data for a user from a sub called 'update' in /controllers/userController.pm. Alternatively, the simpler path of just user/update could be used here with the important params passed in as POST variables. 
+
 /products/search/?query=productName - This format would find the 'search' sub in /controllers/productsController.pm.
+
 /search/?query=productName - This format would find the 'defaultAction' sub in /controllers/searchController.pm as no function is specified as part of the url.
 
 The framework does not dictate how to structure your code, but it is recommended to use a model or library function for business logic, and keep the controller fairly lightweight - dealing with program flow rather than business specific logic. Models or libraries can simply be required using perl's 'require' funciton by your controller as and when you need them.
@@ -41,10 +44,14 @@ You first need to create a perl module called dataController.pm, and place it in
 Start the controller file as follows:
 
   1 #!/usr/bin/perl
+
   2 # dataController.pm
-  5 
-  6 package dataController;
-  7 @ISA = (masterController);
+
+  3 
+
+  4 package dataController;
+
+  5 @ISA = (masterController);
 
 Using @ISA in this way will automatically add functions called new and defaultAction so technically this should work as it is. An AUTOLOAD function in the masterController will return a default 404 error for any non-existent functions which are called too. 
 
@@ -60,6 +67,7 @@ To change the default view
 Simply add one of the following lines in your function in the controller: 
 
 viewController::setContentType("text/html"); viewController::setView("view_template");    - to turn on a the default simple templated view, or 
+
 viewController::setContentType("application/json"); viewController::setView("view_json"); - to turn on a json view. 
 
 Either of these may be set as default in config.cgi however. The default view is currently JSON. 
@@ -73,10 +81,15 @@ Params sent in as part of the URL are stored in a hash (by route.pm) as the url 
 
 They are also passed into any top level controller fuction (one which is called from the url) by default as a hashref called 'pairs',which can be 'shifted' off the calling arguments as follows:
 
+
 sub myFunction(){
+
  	my $self = shift; 
+
 	my $inputs = shift; 
+
 	my $parameter_value = $inputs->{'pairs'}->{'parameter_name'};
+
 }
 
 
@@ -89,16 +102,22 @@ If you are displaying json data, the content-type of the output must be set to a
 The json view will return the following params by default:
 
 error: 		Bool (1/0)
+
 success: 	Bool (1/0) - Both error and success can be set and should always be opposite to each other.
+
 errorMessage: 	String. This should contain any error message returned by your code. 
+
 content: 	JSON. The content key will contain the json that you actually want to return.
 
 
 Initial configuration
 ---------------------
 Configuration settings should all go into /config.cgi, and specified using 'our' so they can be shared with your code. There are very few required configuration settings, but two are notable:
+
 	$path (string) - The path by which your api is called. This could simply be "api" which would relate to /api, here it is 'api' with the auth->login controller function found at api/controllers/authController.pm in function login(), and called by /api/auth/login/.  
+
 	$login_required (bool) - forces a login message if the user is not logged in irrespective of what controller is called.
+
 	$default_content_type (string) - should be application/json for JSON based APIs, and standard text/html for traditional web use. 
 
 Database settings and your own configurations can be placed into this file as well.
@@ -108,11 +127,17 @@ Database settings and your own configurations can be placed into this file as we
 Folder structure
 ----------------
 /controllers - All user defined controller functions should be in here, in the root directory (may be changed to sub-dirs by modifying core scripts).
+
 /core - core framework files, inc base.
+
 /data - data storage eg. text files as you require.
+
 /lib - library functions. These may be general library modules or specific ones (eg. for external data via SOAP/Curl calls, loading in data from modules etc)
+
 /models - model functions, which should be related to database or data storage.
+
 /views - perl files for rendering a view. These will take the output from the controller, render, and finally print.
+
 /views/templates - templates in which to render a view should perl code not be enough. These may be HTML templates with placeholders in which to insert dynamic data.
 
 
